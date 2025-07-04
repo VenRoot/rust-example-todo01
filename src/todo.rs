@@ -1,6 +1,6 @@
 use serde::{Deserialize, Serialize}; // Make sure to add the derive feature in Cargo.toml
 
-#[derive(Debug, Serialize, Deserialize, Clone)]
+#[derive(Debug, Serialize, Deserialize, Clone, PartialEq)]
 pub struct Todo {
     pub title: String,
     pub description: Option<String>,
