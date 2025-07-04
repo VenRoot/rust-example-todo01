@@ -1,6 +1,6 @@
 [package]
 name = "ven-todo"
-version = "0.1.0"
+version = "0.1.1"
 edition = "2024"
 description = "A CLI todo app with YAML storage"
 authors = ["Ven <0ventox0@gmail.com>"]

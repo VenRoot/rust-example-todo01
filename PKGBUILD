@@ -1,5 +1,5 @@
 pkgname=ven-todo-rs
-pkgver=0.1.0
+pkgver=0.1.1
 pkgrel=1
 pkgdesc="A CLI todo application with YAML storage"
 arch=("x86_64")

@@ -1,0 +1,59 @@
+name: Build and Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  build:
+    name: Build and Release
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        
+      - name: Setup Rust
+        uses: actions-rs/toolchain@v1
+        with:
+          profile: minimal
+          toolchain: stable
+          override: true
+      
+      - name: Build Release Binary
+        uses: actions-rs/cargo@v1
+        with:
+          command: build
+          args: --release
+      
+      - name: Get package name from PKGBUILD
+        id: get_pkgname
+        run: |
+          PKGNAME=$(grep '^pkgname=' PKGBUILD | cut -d'=' -f2)
+          echo "pkgname=${PKGNAME}" >> $GITHUB_OUTPUT
+          echo "version=${GITHUB_REF#refs/tags/v}" >> $GITHUB_OUTPUT
+      
+      - name: Create Release Tarball
+        run: |
+          VERSION=${{ steps.get_pkgname.outputs.version }}
+          PKGNAME=${{ steps.get_pkgname.outputs.pkgname }}
+          mkdir -p release/${PKGNAME}-${VERSION}
+          cp -r src/ Cargo.toml Cargo.lock LICENSE README.md PKGBUILD release/${PKGNAME}-${VERSION}/
+          cp target/release/ven-todo release/${PKGNAME}-${VERSION}/
+          cd release
+          tar -czvf ${PKGNAME}-${VERSION}.tar.gz ${PKGNAME}-${VERSION}
+          
+      - name: Create GitHub Release
+        id: create_release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: |
+            release/${{ steps.get_pkgname.outputs.pkgname }}-${{ steps.get_pkgname.outputs.version }}.tar.gz
+            target/release/ven-todo
+          name: Release ${{ steps.get_pkgname.outputs.version }}
+          draft: false
+          prerelease: false
+          generate_release_notes: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.rust-example-todo01-releases }}
