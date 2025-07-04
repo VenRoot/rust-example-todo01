@@ -1,7 +1,10 @@
+use serde::{Deserialize, Serialize}; // Make sure to add the derive feature in Cargo.toml
+
+#[derive(Debug, Serialize, Deserialize, Clone)]
 pub struct Todo {
-    title: String,
-    description: Option<String>,
-    completed: bool
+    pub title: String,
+    pub description: Option<String>,
+    pub completed: bool
 }
 
 

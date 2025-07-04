@@ -1,0 +1,6 @@
+- title: Learn Rust
+  description: Focus on modules and ownership
+  completed: true
+- title: Build a Todo App
+  description: Use serde for serialisation
+  completed: false
