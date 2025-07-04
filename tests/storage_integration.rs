@@ -1,4 +1,4 @@
-use todo01::{storage::Storage, todo::Todo};
+use ven_todo::{storage::Storage, todo::Todo};
 use tempfile::tempdir;
 use std::env;
 
