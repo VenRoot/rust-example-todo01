@@ -1,49 +1,60 @@
 mod todo;
 mod storage;
+mod cli;
 
 use anyhow::{Context, Result};
 use todo::Todo;
 use storage::Storage;
+use clap::Parser;
+use cli::{Cli, Commands};
 
 // Test 1
 
 fn main() -> Result<()> {
 
-    // Example usage of the Todo app
+    let cli = Cli::parse();
     let storage = Storage::new("my_todos");
 
+    let mut todos = storage.load_todos().unwrap_or_default();
 
-    // Create some todos
-    let mut todos = vec![
-        Todo::new("Learn Rust"),
-        Todo::new("Build a Todo App")
-    ];
-
-    todos[0].set_description("Focus on modules and ownership");
-    todos[0].complete();
-    
-    todos[1].set_description("Use serde for serialisation");
-
-    // Save todos to file
-    storage.save_todos(&todos)
-        .context("Failed to save todos")?;
-
-    println!("Todos saved successfully");
-
-    // Load todos from file
-    let loaded_todos = storage.load_todos()
-        .context("Failed to load todos")?;
-
-
-    println!("Loaded {} todos:", loaded_todos.len());
-    for (i, todo) in loaded_todos.iter().enumerate() {
-        println!(
-            "{}. {} [{}]{}",
-            i + 1,
-            todo.title,
-            if todo.is_completed() { "✅" } else { " " },
-            todo.description.as_ref().map_or(String::new(), |d| format!("*: {}", d))
-        );
+    match cli.command {
+        Commands::Add { title, description } => {
+            let mut todo = Todo::new(&title);
+            if let Some(desc) = description.as_deref() {
+                todo.set_description(desc);
+            }
+            todos.push(todo);
+            storage
+                .save_todos(&todos)
+                .context("Failed to save todos")?;
+            println!("Todo added");
+        }
+        Commands::List => {
+            for (i, todo) in todos.iter().enumerate() {
+                println!(
+                    "{}. {} [{}]{}",
+                    i + 1,
+                    todo.title,
+                    if todo.is_completed() { "x" } else { " " },
+                    todo
+                        .description
+                        .as_ref()
+                        .map(|d| format!(" - {}", d))
+                        .unwrap_or_default()
+                );
+            }
+        }
+        Commands::Complete { index } => {
+            if let Some(todo) = todos.get_mut(index - 1) {
+                todo.complete();
+                storage
+                    .save_todos(&todos)
+                    .context("Failed to save todos")?;
+                println!("Todo {} marked complete", index);
+            } else {
+                println!("No todo found with index {}", index);
+            }
+        }
     }
 
     Ok(())

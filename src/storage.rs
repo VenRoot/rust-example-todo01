@@ -2,7 +2,8 @@ use anyhow::{Context, Result};
 use serde_yaml;
 use std::fs::{self, File};
 use std::io::{Read, Write};
-use std::path::{PathBuf};
+use std::path::PathBuf;
+use std::env;
 
 use crate::todo::Todo;
 
@@ -13,17 +14,28 @@ pub struct Storage {
 
 impl Storage {
     pub fn new(file_name: &str) -> Self {
-        let mut path = PathBuf::from("data");
+        let mut base_dir = Self::data_dir();
+        base_dir.push("todo-rs");
 
-        fs::create_dir_all(&path).ok(); // Create data dir if it doesn't exist
+        fs::create_dir_all(&base_dir).ok(); // Create data dir if it doesn't exist
 
-        path.push(file_name);
+        let mut path = base_dir.join(file_name);
 
         if !path.to_str().unwrap_or_default().ends_with(".yaml") {
             path.set_extension("yaml");
         }
 
         Storage { file_path: path } // Return this
+    }
+
+    fn data_dir() -> PathBuf {
+        if let Some(dir) = env::var_os("XDG_DATA_HOME") {
+            PathBuf::from(dir)
+        } else if let Some(home) = env::var_os("HOME").or_else(|| env::var_os("USERPROFILE")) {
+            PathBuf::from(home).join(".local").join("share")
+        } else {
+            PathBuf::from(".")
+        }
     }
 
     pub fn save_todos(&self, todos: &[Todo]) -> Result<()> {

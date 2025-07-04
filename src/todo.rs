@@ -4,7 +4,7 @@ use serde::{Deserialize, Serialize}; // Make sure to add the derive feature in C
 pub struct Todo {
     pub title: String,
     pub description: Option<String>,
-    pub completed: bool
+    completed: bool
 }
 
 
