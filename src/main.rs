@@ -15,7 +15,7 @@ fn main() -> Result<()> {
     let cli = Cli::parse();
     let storage = Storage::new("my_todos");
 
-    let mut todos = storage.load_todos().unwrap_or_default();
+    let mut todos = storage.load_todos().context("Failed to load todos")?;
 
     match cli.command {
         Commands::Add { title, description } => {
